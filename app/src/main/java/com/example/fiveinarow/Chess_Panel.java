@@ -6,9 +6,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.media.MediaPlayer;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +21,13 @@ import java.util.List;
 public class Chess_Panel extends View {
     private int myPanelWidth;
     private float myLineHeight;
-    private int maxLine = 10;
+    private int maxLine = 15;
 
+
+    static MediaPlayer lost;
+    static MediaPlayer put;
+    static MediaPlayer win;
+    public Canvas canvas;
     private Paint myPaint;
     private Bitmap myWhitePiece;
     private Bitmap myBlackPiece;
@@ -27,13 +36,19 @@ public class Chess_Panel extends View {
     private boolean isGameOver;
     public static int WHITE_WIN = 0;
     public static int BLACK_WIN = 1;
-    private boolean isBlack = true;
+    public static boolean isBlack = true;
 
-    private List<Point> myWhiteArray = new ArrayList<Point>();
-    private List<Point> myBlackArray = new ArrayList<Point>();
+    public static List<Point> myWhiteArray = new ArrayList<Point>();
+    public static List<Point> myBlackArray = new ArrayList<Point>();
 
     private OnGameListener onGameListener;
     private int mUnder;
+
+    public static int mode;
+    public static ChessType[][] chessMap = new ChessType[15][15];
+    private ChessType computerType = ChessType.WHITE;
+    private ChessType playerType = ChessType.BLACK;
+    private ComputerPlayer computerPlayer = new ComputerPlayer(chessMap, computerType, playerType);
 
     public Chess_Panel(Context context){
         this(context, null);
@@ -49,15 +64,28 @@ public class Chess_Panel extends View {
         this.onGameListener = onGameListener;
     }
 
+
     private void init() {
         myPaint = new Paint();
         myPaint.setColor(0X44ff0000);
         myPaint.setAntiAlias(true);
         myPaint.setDither(true);
         myPaint.setStyle(Paint.Style.STROKE);
+        mode = 0;
+
+        lost = MediaPlayer.create(getContext(), R.raw.lost);
+        put = MediaPlayer.create(getContext(), R.raw.put);
+        win = MediaPlayer.create(getContext(), R.raw.win);
+
 
         myWhitePiece = BitmapFactory.decodeResource(getResources(), R.drawable.stone_w2);
         myBlackPiece = BitmapFactory.decodeResource(getResources(), R.drawable.stone_b1);
+
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                chessMap[i][j] = ChessType.NONE;
+            }
+        }
     }
 
     public boolean onTouchEvent(MotionEvent event) {
@@ -70,17 +98,44 @@ public class Chess_Panel extends View {
             int y = (int) event.getY();
             Point p = getValidPoint(x,y);
 
+
+
             if (myWhiteArray.contains(p) || myBlackArray.contains(p)) {
                 return false;
             }
 
-            if (isBlack) {
-                myBlackArray.add(p);
+            put.start();
+
+            if (mode == 0) {
+                if (isBlack) {
+                    myBlackArray.add(p);
+                    chessMap[p.x][p.y] = ChessType.BLACK;
+                } else {
+                    myWhiteArray.add(p);
+                    chessMap[p.x][p.y] = ChessType.WHITE;
+                }
+                invalidate();
+                isBlack = !isBlack;
             } else {
-                myWhiteArray.add(p);
+                if (playerType == ChessType.BLACK) {
+                    myBlackArray.add(p);
+                    chessMap[p.x][p.y] = ChessType.BLACK;
+                } else {
+                    myWhiteArray.add(p);
+                    chessMap[p.x][p.y] = ChessType.WHITE;
+                }
+                invalidate();
+                Log.d("Chess_Panel", p.x + " " + p.y);
+                Point comp = computerPlayer.start();
+                Log.d("Chess_Panel", comp.x + " " + comp.y);
+                chessMap[comp.x][comp.y] = this.computerType;
+                if (this.computerType == ChessType.BLACK) {
+                    myBlackArray.add(comp);
+                } else {
+                    myWhiteArray.add(comp);
+                }
+                invalidate();
             }
-            invalidate();
-            isBlack = !isBlack;
         }
         return true;
     }
@@ -120,13 +175,14 @@ public class Chess_Panel extends View {
     }
 
     protected void onDraw(Canvas canvas) {
+        this.canvas = canvas;
         super.onDraw(canvas);
         drawBoard(canvas);
         drawPiece(canvas);
         checkGameOver();
     }
 
-    private void drawBoard(Canvas canvas) {
+    public void drawBoard(Canvas canvas) {
         int w = myPanelWidth;
         float lineHeight = myLineHeight;
         int startX = (int) (lineHeight / 2);
@@ -138,7 +194,7 @@ public class Chess_Panel extends View {
         }
     }
 
-    private void drawPiece(Canvas canvas) {
+    public void drawPiece(Canvas canvas) {
         int n1 = myWhiteArray.size();
         int n2 = myBlackArray.size();
         for (int i = 0; i < n1; i++) {
@@ -158,7 +214,6 @@ public class Chess_Panel extends View {
         boolean blackWin = checkFiveInLine(myBlackArray);
 
         if (whiteWin || blackWin) {
-            isGameOver = true;
             if (onGameListener != null) {
                 onGameListener.onGameOver(whiteWin? WHITE_WIN : BLACK_WIN);
             }
@@ -286,7 +341,12 @@ public class Chess_Panel extends View {
         myWhiteArray.clear();
         myBlackArray.clear();
         isGameOver = false;
-        isBlack = false;
+        isBlack = true;
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                chessMap[i][j] = ChessType.NONE;
+            }
+        }
         invalidate();
     }
 }
