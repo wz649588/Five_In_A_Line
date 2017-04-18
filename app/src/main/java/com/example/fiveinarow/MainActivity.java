@@ -1,6 +1,7 @@
 package com.example.fiveinarow;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -119,6 +120,13 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("MainActivity", "" + panel.mode);
                 }
                 break;
+            case R.id.net:
+                if (panel.mode == 3) {
+                    Toast.makeText(this, "已经是联网对战了", Toast.LENGTH_SHORT).show();
+                } else {
+                    panel.mode = 3;
+                    startActivity(new Intent(MainActivity.this, NetBattle.class));
+                }
             default:
         }
         return true;

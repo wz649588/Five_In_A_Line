@@ -214,6 +214,16 @@ public class Chess_Panel extends View {
         boolean blackWin = checkFiveInLine(myBlackArray);
 
         if (whiteWin || blackWin) {
+            if (mode == 0) {
+                win.start();
+            } else {
+                if (whiteWin) {
+                    lost.start();
+                } else {
+                    win.start();
+                }
+            }
+
             if (onGameListener != null) {
                 onGameListener.onGameOver(whiteWin? WHITE_WIN : BLACK_WIN);
             }
