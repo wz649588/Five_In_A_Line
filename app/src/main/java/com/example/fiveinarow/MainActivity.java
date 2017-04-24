@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "已经是联网对战了", Toast.LENGTH_SHORT).show();
                 } else {
                     panel.mode = 3;
+                    panel.restartGame();
                     startActivity(new Intent(MainActivity.this, NetBattle.class));
                 }
             default:

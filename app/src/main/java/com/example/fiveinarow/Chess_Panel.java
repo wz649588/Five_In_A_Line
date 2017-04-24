@@ -14,6 +14,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,7 +123,7 @@ public class Chess_Panel extends View {
                 }
                 invalidate();
                 isBlack = !isBlack;
-            } else {
+            } else if (mode == 1){
                 if (playerType == ChessType.BLACK) {
                     myBlackArray.add(p);
                     chessMap[p.x][p.y] = ChessType.BLACK;
@@ -135,6 +142,14 @@ public class Chess_Panel extends View {
                     myWhiteArray.add(comp);
                 }
                 invalidate();
+            } else {
+                Piece piece;
+                if(myBlackArray.size() == myWhiteArray.size()){
+                    piece = new Piece(p.x, p.y, 200);
+                } else {
+                    piece = new Piece(p.x, p.y, 100);
+                }
+                FirebaseDatabase.getInstance().getReference().push().setValue(piece);
             }
         }
         return true;

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1063063225870",
+    "firebase_url": "https://fiveinaline-37fab.firebaseio.com",
+    "project_id": "fiveinaline-37fab",
+    "storage_bucket": "fiveinaline-37fab.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1063063225870:android:1b2dbeaec9fe0332",
+        "android_client_info": {
+          "package_name": "com.example.fiveinarow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1063063225870-fkam830qk3hipogq4i0je31rglsglh0h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.fiveinarow",
+            "certificate_hash": "f19a7350b06a3ef9142d974dc797ea3a73d1279b"
+          }
+        },
+        {
+          "client_id": "1063063225870-ct8e9b9tpoeohv347sv40hrtlotc2r03.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBs9AeitbgZhFTS06BcdcdiqS1Det-PJLs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1063063225870-ct8e9b9tpoeohv347sv40hrtlotc2r03.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
