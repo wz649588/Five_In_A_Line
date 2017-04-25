@@ -55,7 +55,7 @@ public class Chess_Panel extends View {
     public static ChessType[][] chessMap = new ChessType[15][15];
     private ChessType computerType = ChessType.WHITE;
     private ChessType playerType = ChessType.BLACK;
-    private ComputerPlayer computerPlayer = new ComputerPlayer(chessMap, computerType, playerType);
+    public static ComputerPlayer computerPlayer = new ComputerPlayer(chessMap, ChessType.WHITE, ChessType.BLACK);
 
     public Chess_Panel(Context context){
         this(context, null);
@@ -132,9 +132,7 @@ public class Chess_Panel extends View {
                     chessMap[p.x][p.y] = ChessType.WHITE;
                 }
                 invalidate();
-                Log.d("Chess_Panel", p.x + " " + p.y);
                 Point comp = computerPlayer.start();
-                Log.d("Chess_Panel", comp.x + " " + comp.y);
                 chessMap[comp.x][comp.y] = this.computerType;
                 if (this.computerType == ChessType.BLACK) {
                     myBlackArray.add(comp);
@@ -142,14 +140,15 @@ public class Chess_Panel extends View {
                     myWhiteArray.add(comp);
                 }
                 invalidate();
-            } else {
+            } else if(mode == 2){
                 Piece piece;
-                if(myBlackArray.size() == myWhiteArray.size()){
-                    piece = new Piece(p.x, p.y, 200);
-                } else {
-                    piece = new Piece(p.x, p.y, 100);
+                if(myBlackArray.size() == myWhiteArray.size() && NetBattle.player == 200){
+                    piece = new Piece(p.x, p.y, NetBattle.player);
+                    FirebaseDatabase.getInstance().getReference().child("Pieces").push().setValue(piece);
+                } else if(myBlackArray.size() == myWhiteArray.size() + 1 && NetBattle.player == 100){
+                    piece = new Piece(p.x, p.y, NetBattle.player);
+                    FirebaseDatabase.getInstance().getReference().child("Pieces").push().setValue(piece);
                 }
-                FirebaseDatabase.getInstance().getReference().push().setValue(piece);
             }
         }
         return true;
@@ -231,11 +230,17 @@ public class Chess_Panel extends View {
         if (whiteWin || blackWin) {
             if (mode == 0) {
                 win.start();
-            } else {
+            } else if(mode ==1) {
                 if (whiteWin) {
                     lost.start();
                 } else {
                     win.start();
+                }
+            } else {
+                if ((whiteWin && NetBattle.player == 100) || (blackWin && NetBattle.player == 200)) {
+                    win.start();
+                } else {
+                    lost.start();
                 }
             }
 

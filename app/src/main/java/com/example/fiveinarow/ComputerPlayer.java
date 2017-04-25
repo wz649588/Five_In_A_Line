@@ -12,9 +12,9 @@ public class ComputerPlayer {
     private int[][] computerMap = new int[15][15];
     private int[][] playerMap = new int[15][15];
     // 电脑的棋子颜色
-    private ChessType computerType = ChessType.WHITE;
+    private ChessType computerType;
     // 玩家的棋子颜色
-    private ChessType playerType = ChessType.BLACK;
+    private ChessType playerType;
     private ChessStatus[] chessStatus = new ChessStatus[4];
 
     public ComputerPlayer(ChessType[][] chessMap, ChessType computerType,
@@ -22,6 +22,14 @@ public class ComputerPlayer {
         this.chessMap = chessMap;
         this.playerType = playerType;
         this.computerType = computerType;
+    }
+
+    public ChessType getComputerType() {
+        return computerType;
+    }
+
+    public ChessType getPlayerType() {
+        return playerType;
     }
 
     /**

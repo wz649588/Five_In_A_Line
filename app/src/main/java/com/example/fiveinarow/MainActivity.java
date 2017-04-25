@@ -2,6 +2,7 @@ package com.example.fiveinarow;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Point;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog.Builder builder;
     private Button newGame;
     private Button unDo;
+    public static int yourColor = 0;//1 is white, 2 is black;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
         panel = (Chess_Panel) findViewById(R.id.main_panel);
         newGame = (Button) findViewById(R.id.new_game);
         unDo = (Button) findViewById(R.id.undo);
+
+
         newGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -121,10 +125,10 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.net:
-                if (panel.mode == 3) {
+                if (panel.mode == 2) {
                     Toast.makeText(this, "已经是联网对战了", Toast.LENGTH_SHORT).show();
                 } else {
-                    panel.mode = 3;
+                    panel.mode = 2;
                     panel.restartGame();
                     startActivity(new Intent(MainActivity.this, NetBattle.class));
                 }

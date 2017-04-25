@@ -40,22 +40,33 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
+
 
 public class NetBattle extends AppCompatActivity {
 
     private Chess_Panel netPanel;
     private Button netNewGame;
     private AlertDialog.Builder builder;
+    public static int player = 0;
+    private Button chooseBlack;
+    private Button chooseWhite;
+    private DatabaseReference mDatabase;
+    private Button start;
+    private ArrayList<Distribute> players = new ArrayList<>();
 
     private static int SIGN_IN_REQUEST_CODE = 1;
     LinearLayout activity_net_battle;
 
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.sign) {
+            again();
+            player = 0;
             AuthUI.getInstance().signOut(this).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     Snackbar.make(activity_net_battle, "You have been signed out", Snackbar.LENGTH_SHORT).show();
+                    netPanel.mode = 0;
                     finish();
                 }
             });
@@ -74,6 +85,8 @@ public class NetBattle extends AppCompatActivity {
         if(requestCode == SIGN_IN_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Snackbar.make(activity_net_battle, "Successfully signed in. Welcome!", Snackbar.LENGTH_SHORT).show();
+                displayPiece();
+                displayDistribute();
             } else {
                 Snackbar.make(activity_net_battle, "We couldn't sign you in Please try again later", Snackbar.LENGTH_SHORT).show();
                 finish();
@@ -90,13 +103,46 @@ public class NetBattle extends AppCompatActivity {
         activity_net_battle = (LinearLayout) findViewById(R.id.activity_net_battle);
         netPanel = (Chess_Panel) findViewById(R.id.net_panel);
         netNewGame = (Button) findViewById(R.id.netNewGame);
-        netPanel.mode = 2;
+        chooseBlack = (Button) findViewById(R.id.ChooseBlack);
+        chooseWhite = (Button) findViewById(R.id.ChooseWhite);
+        start = (Button) findViewById(R.id.Start);
 
+        netPanel.mode = 2;
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+
+        start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(player == 0) {
+                    player = 50;
+                    mDatabase.child("Distribute").push().setValue(new Distribute(FirebaseAuth.getInstance().getCurrentUser().getEmail()));
+                }
+            }
+        });
 
         netNewGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 again();
+                player = 0;
+            }
+        });
+        chooseBlack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(player==0) {
+                    player = 200;
+                }
+            }
+        });
+
+        chooseWhite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(player == 0) {
+                    player = 100;
+                }
             }
         });
 
@@ -107,7 +153,10 @@ public class NetBattle extends AppCompatActivity {
             Snackbar.make(activity_net_battle, "Welcome " + FirebaseAuth.getInstance().getCurrentUser().getEmail(), Snackbar.LENGTH_SHORT)
                     .show();
             displayPiece();
+            displayDistribute();
         }
+
+
 
         Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -117,12 +166,19 @@ public class NetBattle extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 again();
+                if(player == 100) {
+                    player = 200;
+                } else {
+                    player = 100;
+                }
             }
         });
         builder.setNegativeButton("Exit", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 again();
+                player = 0;
+                netPanel.mode = 0;
                 startActivity(new Intent(NetBattle.this, MainActivity.class));
             }
         });
@@ -130,10 +186,10 @@ public class NetBattle extends AppCompatActivity {
             @Override
             public void onGameOver(int i) {
                 String str = "";
-                if (i == Chess_Panel.WHITE_WIN) {
-                    str = "White win";
-                } else if (i == Chess_Panel.BLACK_WIN) {
-                    str = "Black win";
+                if ((i == Chess_Panel.WHITE_WIN && player == 100) || (i == Chess_Panel.BLACK_WIN && player == 200)) {
+                    str = "You win";
+                } else {
+                    str = "You lose";
                 }
                 builder.setMessage(str);
                 builder.setCancelable(false);
@@ -159,13 +215,62 @@ public class NetBattle extends AppCompatActivity {
         }
     }
 
-   private void displayPiece() {
+    public static class DistributeViewHolder extends RecyclerView.ViewHolder {
+        TextView emailp, ranp;
+
+        public DistributeViewHolder(View v) {
+            super(v);
+            emailp = (TextView) v.findViewById(R.id.email);
+            ranp = (TextView) v.findViewById(R.id.ran);
+        }
+    }
+
+
+    public void displayDistribute() {
+        RecyclerView listOfPlayers = (RecyclerView) findViewById(R.id.distributeView);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setReverseLayout(true);
+        listOfPlayers.setLayoutManager(linearLayoutManager);
+        FirebaseRecyclerAdapter<Distribute, DistributeViewHolder> adapter = new FirebaseRecyclerAdapter<Distribute, DistributeViewHolder>(Distribute.class, R.layout.listviewd, DistributeViewHolder.class, FirebaseDatabase.getInstance().
+                getReference().child("Distribute")) {
+            @Override
+            protected void populateViewHolder(DistributeViewHolder distributeViewHolder, Distribute model, int position) {
+                distributeViewHolder.emailp.setText(model.getEmail());
+                distributeViewHolder.ranp.setText(model.getRan()+"");
+
+                players.add(new Distribute(model.getEmail(), model.getRan()));
+                if(players.size() == 2 && player == 50) {
+                    if(players.get(0).getEmail() == FirebaseAuth.getInstance().getCurrentUser().getEmail()){
+                        if(players.get(0).getRan() > players.get(1).getRan()) {
+                            player = 200;
+                            Toast.makeText(NetBattle.this, "你执黑", Toast.LENGTH_SHORT).show();
+                        } else {
+                            player = 100;
+                            Toast.makeText(NetBattle.this, "你执白", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    if(players.get(1).getEmail() == FirebaseAuth.getInstance().getCurrentUser().getEmail()){
+                        if(players.get(1).getRan() > players.get(0).getRan()) {
+                            player = 200;
+                            Toast.makeText(NetBattle.this, "你执黑", Toast.LENGTH_SHORT).show();
+                        } else {
+                            player = 100;
+                            Toast.makeText(NetBattle.this, "你执白", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            }
+        };
+        listOfPlayers.setAdapter(adapter);
+    }
+
+   public void displayPiece() {
        RecyclerView listOfMessage = (RecyclerView) findViewById(R.id.pieceView);
        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
        linearLayoutManager.setReverseLayout(true);
        listOfMessage.setLayoutManager(linearLayoutManager);
        FirebaseRecyclerAdapter<Piece, UsersViewHolder> adapter = new FirebaseRecyclerAdapter<Piece, UsersViewHolder>(Piece.class, R.layout.list_view, UsersViewHolder.class, FirebaseDatabase.getInstance().
-               getReference()) {
+               getReference().child("Pieces")) {
            @Override
            protected void populateViewHolder(UsersViewHolder usersViewHolder, Piece model, int position) {
                usersViewHolder.xp.setText(model.getX()+"");
@@ -187,8 +292,7 @@ public class NetBattle extends AppCompatActivity {
            public void onItemRangeInserted(int positionStart, int itemCount) {
                super.onItemRangeInserted(positionStart, itemCount);
                int friendlyMessageCount = adapter.getItemCount();
-               int lastVisiblePosition =
-                       linearLayoutManager.findLastCompletelyVisibleItemPosition();
+               int lastVisiblePosition = linearLayoutManager.findLastCompletelyVisibleItemPosition();
                // If the recycler view is initially being loaded or the
                // user is at the bottom of the list, scroll to the bottom
                // of the list to show the newly added message.
@@ -203,7 +307,7 @@ public class NetBattle extends AppCompatActivity {
     }
 
     private void removeAll() {
-        Query applesQuery = FirebaseDatabase.getInstance().getReference(); //.orderByChild("type").equalTo(200);
+        Query applesQuery = FirebaseDatabase.getInstance().getReference().child("Pieces"); //.orderByChild("type").equalTo(200);
         applesQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -220,7 +324,7 @@ public class NetBattle extends AppCompatActivity {
     }
 
     private void again() {
-        Query applesQuery = FirebaseDatabase.getInstance().getReference(); //.orderByChild("type").equalTo(200);
+        Query applesQuery = FirebaseDatabase.getInstance().getReference().child("Pieces"); //.orderByChild("type").equalTo(200);
         applesQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -234,6 +338,21 @@ public class NetBattle extends AppCompatActivity {
                 Log.e("NetBattle", "onCancelled", databaseError.toException());
             }
         });
+        Query disQuery = FirebaseDatabase.getInstance().getReference().child("Distribute"); //.orderByChild("type").equalTo(200);
+        disQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot appleSnapshot: dataSnapshot.getChildren()) {
+                    appleSnapshot.getRef().removeValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("NetBattle", "onCancelled", databaseError.toException());
+            }
+        });
         netPanel.restartGame();
+        players.clear();
     }
 }
