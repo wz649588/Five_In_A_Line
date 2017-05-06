@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.media.MediaPlayer;
@@ -31,9 +32,9 @@ public class Chess_Panel extends View {
     private int maxLine = 15;
 
 
-    static MediaPlayer lost;
-    static MediaPlayer put;
-    static MediaPlayer win;
+    private MediaPlayer lost;
+    private MediaPlayer put;
+    private MediaPlayer win;
     public Canvas canvas;
     private Paint myPaint;
     private Bitmap myWhitePiece;
@@ -74,7 +75,7 @@ public class Chess_Panel extends View {
 
     private void init() {
         myPaint = new Paint();
-        myPaint.setColor(0X44ff0000);
+        myPaint.setColor(Color.BLACK);
         myPaint.setAntiAlias(true);
         myPaint.setDither(true);
         myPaint.setStyle(Paint.Style.STROKE);
@@ -143,11 +144,11 @@ public class Chess_Panel extends View {
             } else if(mode == 2){
                 Piece piece;
                 if(myBlackArray.size() == myWhiteArray.size() && NetBattle.player == 200){
-                    piece = new Piece(p.x, p.y, NetBattle.player);
-                    FirebaseDatabase.getInstance().getReference().child("Pieces").push().setValue(piece);
+                    piece = new Piece(p.x, p.y, NetBattle.player, myBlackArray.size() + myWhiteArray.size());
+                    NetBattle.mDatabase.child("Pieces").child((myBlackArray.size() + myWhiteArray.size())+"").setValue(piece);
                 } else if(myBlackArray.size() == myWhiteArray.size() + 1 && NetBattle.player == 100){
-                    piece = new Piece(p.x, p.y, NetBattle.player);
-                    FirebaseDatabase.getInstance().getReference().child("Pieces").push().setValue(piece);
+                    piece = new Piece(p.x, p.y, NetBattle.player, myBlackArray.size() + myWhiteArray.size());
+                    NetBattle.mDatabase.child("Pieces").child((myBlackArray.size() + myWhiteArray.size())+"").setValue(piece);
                 }
             }
         }
@@ -201,8 +202,8 @@ public class Chess_Panel extends View {
         float lineHeight = myLineHeight;
         int startX = (int) (lineHeight / 2);
         int endX = (int) (w - lineHeight / 2);
-        for (int i = 0; i < maxLine; i++) {
-            int y = (int) ((i + 1.5) * lineHeight);
+        for (int i = 0; i <= maxLine; i++) {
+            int y = (int) ((i + 0.5) * lineHeight);
             canvas.drawLine(startX, y, endX, y, myPaint);
             canvas.drawLine(y, startX, y, endX, myPaint);
         }

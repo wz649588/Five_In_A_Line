@@ -8,6 +8,7 @@ public class Piece {
     private int x;
     private int y;
     private int type;//type=100 white; type = 200 black
+    private int number;
 
     public Piece(){
     }
@@ -16,6 +17,21 @@ public class Piece {
         this.type = type;
         this.x = x;
         this.y = y;
+    }
+
+    public Piece(int x, int y, int type, int number){
+        this.type = type;
+        this.x = x;
+        this.y = y;
+        this.number = number;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
     }
 
     public int getX() {

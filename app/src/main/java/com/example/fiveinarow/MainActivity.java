@@ -2,11 +2,11 @@ package com.example.fiveinarow;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Point;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutCompat;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,7 +14,12 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
+
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,6 +27,10 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog.Builder builder;
     private Button newGame;
     private Button unDo;
+    private Button saveData;
+    private SaveSheet saveSheet;
+    private ReadSheet readSheet;
+    private Button readData;
     public static int yourColor = 0;//1 is white, 2 is black;
 
     @Override
@@ -31,7 +40,25 @@ public class MainActivity extends AppCompatActivity {
         panel = (Chess_Panel) findViewById(R.id.main_panel);
         newGame = (Button) findViewById(R.id.new_game);
         unDo = (Button) findViewById(R.id.undo);
+        saveData = (Button) findViewById(R.id.save_data);
+        readData = (Button) findViewById(R.id.read_data);
 
+        readData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                panel.restartGame();
+                Intent intent= new Intent(MainActivity.this, GetSheetFiles.class);
+                startActivity(intent);
+            }
+        });
+
+        saveData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SaveSheetToFile saveSheetToFile = new SaveSheetToFile(MainActivity.this, panel);
+                saveSheetToFile.save();
+            }
+        });
 
         newGame.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 panel.restartGame();
             }
         });
+
         unDo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -63,18 +91,23 @@ public class MainActivity extends AppCompatActivity {
                                 [panel.myBlackArray.get(panel.myBlackArray.size() - 1).y] = ChessType.NONE;
                         panel.myBlackArray.remove(panel.myBlackArray.size() - 1);
                     }
-                     panel.invalidate();
+                    panel.invalidate();
                 }
             }
         });
-        Window window = getWindow();
-        window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle("Game Over");
-        builder.setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Again", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                MainActivity.this.finish();
+                panel.restartGame();
+            }
+        });
+        builder.setPositiveButton("Back", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
             }
         });
         panel.setOnGameListener(new OnGameListener() {
@@ -99,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
 
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar, menu);//给当前活动创建菜单
@@ -125,13 +159,10 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.net:
-                if (panel.mode == 2) {
-                    Toast.makeText(this, "已经是联网对战了", Toast.LENGTH_SHORT).show();
-                } else {
-                    panel.mode = 2;
-                    panel.restartGame();
-                    startActivity(new Intent(MainActivity.this, NetBattle.class));
-                }
+                panel.mode = 2;
+                panel.restartGame();
+                startActivity(new Intent(MainActivity.this, NetBattlePalyers.class));
+
             default:
         }
         return true;
